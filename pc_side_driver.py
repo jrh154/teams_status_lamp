@@ -66,7 +66,10 @@ def connectToSerial():
                 if ser_data == b"TEAMS_LAMP":
                     print("Teams lamp found")
                     ser.write(b"R\n")
+                    time.sleep(0.5)
+                    return ser
                 time.sleep(0.5)
+                #i +=1 
         
 def __main__():
     connected = False
@@ -74,4 +77,4 @@ def __main__():
         pass
 
 sendCommand("SET_COLOR", status="ON_CALL", value="RED", value_type="NAME")
-connectToSerial()
+ser = connectToSerial()
