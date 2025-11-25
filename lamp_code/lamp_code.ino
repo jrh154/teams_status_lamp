@@ -163,8 +163,8 @@ void broadcastID() {
 
       // If connection request from PC as expected, proceed to main script
       if(message == PC_MESSAGE) {
-        Serial.println("Connection Received"); // Debugging
-        Serial.println(MCU_MESSAGE); // Debugging
+        //Serial.println("Connection Received"); // Debugging
+        //Serial.println(MCU_MESSAGE); // Debugging
         blinkLeds(CRGB::Green, 300, 3); // Blink to acknowledge connection
         turnOnLeds(off_call_color);
         
@@ -224,8 +224,8 @@ void changeColor(String command) {
 
   // Different conversion method based on type passed
   if (value_type == "HEX") {
-    Serial.print("Value Type is HEX...setting color to: ");
-    Serial.println(value);
+    //Serial.print("Value Type is HEX...setting color to: ");
+    //Serial.println(value);
     
     // Convert string to hex
     const char* hexCstr = value.c_str(); // get a pointer to the character array for string (required for strtol)
@@ -235,14 +235,14 @@ void changeColor(String command) {
     color = hexValue;
 
   } else if (value_type == "RGB") {
-    Serial.print("Value Type is RGB...setting color to: ");
-    Serial.println("value");
+    //Serial.print("Value Type is RGB...setting color to: ");
+    //Serial.println("value");
 
     // TO BE IMPLEMENTED!
 
   } else if (value_type == "NAME") {
-    Serial.print("Value Type is NAME...setting color to: ");
-    Serial.println(value);
+    //Serial.print("Value Type is NAME...setting color to: ");
+    //Serial.println(value);
     
     color = stringNameToCRGB(value);
   }
