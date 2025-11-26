@@ -2,12 +2,12 @@ import time
 import serial
 import serial.tools.list_ports
 
-BAUD_RATE = 9600
+BAUD_RATE = 115200
 PC_MESSAGE = "R"
 HEARTBEAT_TIMEOUT = 10 # in seconds
-MAX_LISTEN_TIME = 3
+MAX_LISTEN_TIME = 6
 
-def sendCommand(command, **kwargs):
+def sendCommand(ser, command, **kwargs):
     valid_args = ["status", "value_type", "value"]
     valid_commands = ["SET_COLOR", "SET_STATUS"]
     valid_value_types = ["HEX", "RGB", "NAME"]
@@ -25,7 +25,7 @@ def sendCommand(command, **kwargs):
         if kwargs["status"] not in valid_status:
             print(f"Invalid status: {kwargs["status"]}")
         else:
-            send_text = ":".join[command, kwargs['status']]
+            send_text = ":".join([command, kwargs['status']])
     elif command == "SET_COLOR":
         # Check for command validity
         if kwargs["status"] not in valid_status:
@@ -39,10 +39,10 @@ def sendCommand(command, **kwargs):
             return None
         else:
             send_text = ":".join([command, kwargs['status'], kwargs['value_type'], kwargs['value']])
-    
-    send_text += "\n" # add new line
     print(send_text)
-    #ser.write(send_text.encode('utf-8'))
+    ser.write(send_text.encode('utf-8'))
+    ser.flush()
+    time.sleep(0.5)
 
 def connectToSerial():
     ports = serial.tools.list_ports.comports()
@@ -52,7 +52,7 @@ def connectToSerial():
     for port in ports:
         try:
             print(f"Trying port {port.device}")
-            ser = serial.Serial(port=port.device, baudrate=BAUD_RATE)
+            ser = serial.Serial(port=port.device, baudrate=BAUD_RATE, timeout=HEARTBEAT_TIMEOUT)
             time.sleep(1)
             print(f"Connected to {port.device}")
         except serial.SerialException as e:
@@ -60,21 +60,52 @@ def connectToSerial():
         
         if ser:
             i = 0
-            while i <= MAX_LISTEN_TIME:
+            while i <= MAX_LISTEN_TIME: # LISTENING TIME = MAX_LISTEN_TIME*0.5...more a loop counter
                 ser_data = ser.readline().strip()
                 print(ser_data.strip())
                 if ser_data == b"TEAMS_LAMP":
                     print("Teams lamp found")
                     ser.write(b"R\n")
-                    time.sleep(0.5)
+                    time.sleep(5) # need to add a rest period in here otherwise loop does not break
+                    ser.flushInput()
                     return ser
                 time.sleep(0.5)
-                #i +=1 
+                i +=1 
         
 def __main__():
     connected = False
-    while not connected:
-        pass
+    ser = None
+    on_call = True
+    while True:
+        while not ser:
+            ser = connectToSerial()
+        while ser:
+            # Read any status updates from the mcu
+            mcu_message = ser.readline().strip()
+            print(f"The MCU Message was: {mcu_message}")              
+            
+            #Test to see if lamp is trying to broadcast ID unexpectedly
+            if mcu_message == b"TEAMS_LAMP":
+                print("MCU Connection died unexpectedly...MCU Timeout")
+                time.sleep(1)
+                ser.close()
+                ser=None
+                break
 
-sendCommand("SET_COLOR", status="ON_CALL", value="RED", value_type="NAME")
-ser = connectToSerial()
+            # send heartbeak to keep connection
+            ser.write(b"R\n")
+            ser.flush()
+            time.sleep(2)
+            
+            
+            # Quick test script, should flash between Red and  Green every 1 s
+            if on_call:
+                sendCommand(ser, command="SET_STATUS", status="ON_CALL")
+                on_call = not on_call
+            #else:
+            #    sendCommand(ser, command="SET_STATUS", status="OFF_CALL")
+            #    on_call = not on_call
+            #time.sleep(1)
+
+#sendCommand("SET_COLOR", status="ON_CALL", value="RED", value_type="NAME")
+__main__()

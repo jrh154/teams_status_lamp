@@ -19,7 +19,7 @@ CRGB leds[NUM_LEDS];
 #define MCU_MESSAGE "S"
 
 // Serial Setup
-#define BAUD 9600
+#define BAUD 115200
 
 // Heartbeat Timeout
 #define HEARTBEAT_TIMEOUT 10000
@@ -27,6 +27,7 @@ CRGB leds[NUM_LEDS];
 
 // Variable Initialization
 String incoming_data = "";
+bool stringComplete = false;
 
 // hearbeat variables
 unsigned long previousTimeoutMillis = 0;
@@ -52,7 +53,6 @@ CRGB off_call_color = CRGB::Green;
 // Function for blinking leds a given color, with given interval (blink period) and given number 
 void blinkLeds(CRGB color, int blink_period, int blinks) {
   for (int i = 1; i <= blinks; i++) {
-    Serial.println("Blinking");
     fill_solid(leds, NUM_LEDS, color);
     FastLED.show();
     delay(blink_period);
@@ -136,7 +136,7 @@ CRGB stringNameToCRGB(String colorName) {
   }
 
   else {
-    Serial.println("Color Not Recognized");
+    // Serial.println("Color Not Recognized");
     blinkLeds(CRGB::Violet, 200, 3);
   }
 }
@@ -158,8 +158,8 @@ void broadcastID() {
       message.trim();
 
       // Debugging prints, not needed
-      Serial.print("Received Connection Request: ");
-      Serial.println(message);
+      //Serial.print("Received Connection Request: ");
+      //Serial.println(message);
 
       // If connection request from PC as expected, proceed to main script
       if(message == PC_MESSAGE) {
@@ -179,25 +179,30 @@ void broadcastID() {
   }
 }
 
-void heartbeatThread() {
-  Serial.println(MCU_MESSAGE); // send initial heartbeat
+// void heartbeatThread(String incoming_data) {
+//   Serial.println(MCU_MESSAGE); // send initial heartbeat
+//   Serial.flush();
 
-  // Debug printing
-  Serial.print("Time since last PC heartbeat received");
-  Serial.println(currentTimeoutMillis - previousTimeoutMillis);
+//   // Debug printing
+//   // Serial.print("Time since last PC heartbeat received");
+//   // Serial.println(currentTimeoutMillis - previousTimeoutMillis);\
+//   // Serial.print("Incoming data was: ");
+//   // Serial.println(incoming_data);
+//   // Serial.flush();
 
-  if (incoming_data==PC_MESSAGE) {
-    Serial.println("PC Heartbeat Received");
-    previousTimeoutMillis = millis();
-    return;
-  }
+//   if (incoming_data==PC_MESSAGE) {
+//     // Serial.println("PC Heartbeat Received");
+//     // Serial.flush();
+//     previousTimeoutMillis = millis();
+//     return;
+//   }
 
-  if (currentTimeoutMillis - previousTimeoutMillis > HEARTBEAT_TIMEOUT) {
-    Serial.println("ERROR! LOST CONNECTION WITH PC...RESTARTING BROADCAST");
-    blinkLeds(CRGB::Violet, 200, 5);
-    broadcastID();
-  }
-}
+//   if (currentTimeoutMillis - previousTimeoutMillis > HEARTBEAT_TIMEOUT) {
+//     //Serial.println("ERROR! LOST CONNECTION WITH PC...RESTARTING BROADCAST");
+//     blinkLeds(CRGB::Violet, 200, 5);
+//     broadcastID();
+//   }
+// }
 
 //////////////
 /// Teams Lamp Functions
@@ -254,8 +259,8 @@ void changeColor(String command) {
     off_call_color = color;
   } else {
     //Consider wrong status value provided
-    Serial.print("Status type not recognized...read: ");
-    Serial.println(status);
+    //Serial.print("Status type not recognized...read: ");
+    //Serial.println(status);
     blinkLeds(CRGB::Violet, 200, 3);
     }
 
@@ -271,13 +276,13 @@ void setStatus(String command) {
 
   // Perform action based on status...can extend this as needed
   if(status == "ON_CALL") {
-    Serial.println("Changing LED status to: ON CALL");
+    //Serial.println("Changing LED status to: ON CALL");
     turnOnLeds(on_call_color);
   } else if(status == "OFF_CALL") {
-    Serial.println("Changing LED status to OFF_CALL");
+    //Serial.println("Changing LED status to OFF_CALL");
     turnOnLeds(off_call_color);
   } else {
-    Serial.println("Status type unrecognized");
+    //Serial.println("Status type unrecognized");
   }
 
 }
@@ -285,18 +290,18 @@ void setStatus(String command) {
 void parseCommand(String command) {
 
   // debugging
-  Serial.print("Command Received: ");
-  Serial.println(command);
+  //Serial.print("Command Received: ");
+  //Serial.println(command);
 
   // Send to appropriate function based on command...can expand this here
   if (command.startsWith("SET_COLOR")) {
-    Serial.println("Got command to set color");
+    //Serial.println("Got command to set color");
     changeColor(command);
   } else if(command.startsWith("SET_STATUS")) {
-    Serial.println("Got commmand to change status");
+    //Serial.println("Got commmand to change status");
     setStatus(command);
   } else {
-    Serial.println("Command not recognized!");
+    //Serial.println("Command not recognized!");
   }
 }
 /////////////////////
@@ -316,16 +321,41 @@ void loop() {
   currentTimeoutMillis = millis(); // Track how long since last received heartbeat from PC
   currentHeartBeatTimer = millis(); // Track how long since sending last heartbeat message
   
-  //Read the data in the serial port
-  incoming_data = Serial.readString();
-  incoming_data.trim();
-
-  parseCommand(incoming_data);
-  if (currentHeartBeatTimer - previousHeartBeatTimer >=HEARTBEAT_PULSE) {
-    heartbeatThread();
+  // Read the entire Serial before parsing
+  while (Serial.available()) {
+    char inChar = (char)Serial.read();
+    incoming_data += inChar;
+    if (inChar == '\n') {
+      stringComplete = true;
+    }
+  }
+  
+  // After string fully received interpret the command
+  if (stringComplete) {
+    incoming_data.trim() // Trim the whitespace
+    
+    // Check if hearbeat signal directly here and reset accordingly, otherwise parse the command
+    if (incoming_data.equals(PC_MESSAGE)) {
+      previousTimeoutMillis = millis(); //reset the heartbeat timer
+    } else {
+      parseCommand(input_string);
+    }
+    // Reset the string reader
+    input_string = "";
+    stringComplte = false;
   }
 
+  // Pulse a heartbeat once per heartbeat pulse...may want to play around with timing here
+  if (currentHeartBeatTimer - previousHeartBeatTimer >=HEARTBEAT_PULSE) {
+    Serial.println(MCU_MESSAGE); // send heartbeat to PC
+    Serial.flush();
   
+    if (currentTimeoutMillis - previousTimeoutMillis > HEARTBEAT_TIMEOUT) {
+       //Serial.println("ERROR! LOST CONNECTION WITH PC...RESTARTING BROADCAST");
+       blinkLeds(CRGB::Violet, 200, 5);
+       broadcastID();
+    }
+  }
 }
 
 
