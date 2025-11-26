@@ -332,17 +332,17 @@ void loop() {
   
   // After string fully received interpret the command
   if (stringComplete) {
-    incoming_data.trim() // Trim the whitespace
+    incoming_data.trim(); // Trim the whitespace
     
     // Check if hearbeat signal directly here and reset accordingly, otherwise parse the command
     if (incoming_data.equals(PC_MESSAGE)) {
       previousTimeoutMillis = millis(); //reset the heartbeat timer
     } else {
-      parseCommand(input_string);
+      parseCommand(incoming_data);
     }
     // Reset the string reader
-    input_string = "";
-    stringComplte = false;
+    incoming_data = "";
+    stringComplete = false;
   }
 
   // Pulse a heartbeat once per heartbeat pulse...may want to play around with timing here

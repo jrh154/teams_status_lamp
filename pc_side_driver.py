@@ -71,7 +71,15 @@ def connectToSerial():
                     return ser
                 time.sleep(0.5)
                 i +=1 
-        
+def read_mcu_updates(ser):
+    if ser.in_waiting > 0:
+        mcu_message = ser.readline().strip()
+        print(f"The MCU Message was: {mcu_message}")
+
+        if mcu_message == b"TEAMS_LAMP":
+            return False
+    return True        
+
 def __main__():
     connected = False
     ser = None
@@ -80,32 +88,17 @@ def __main__():
         while not ser:
             ser = connectToSerial()
         while ser:
-            # Read any status updates from the mcu
-            mcu_message = ser.readline().strip()
-            print(f"The MCU Message was: {mcu_message}")              
-            
-            #Test to see if lamp is trying to broadcast ID unexpectedly
-            if mcu_message == b"TEAMS_LAMP":
-                print("MCU Connection died unexpectedly...MCU Timeout")
-                time.sleep(1)
-                ser.close()
-                ser=None
+            # Read in a non-blocking way to see if lamp has reset
+            if not read_mcu_updates(ser):
                 break
-
-            # send heartbeak to keep connection
+           
+            # send heartbeat to keep connection
             ser.write(b"R\n")
-            ser.flush()
-            time.sleep(2)
-            
+            ser.flush() 
             
             # Quick test script, should flash between Red and  Green every 1 s
             if on_call:
                 sendCommand(ser, command="SET_STATUS", status="ON_CALL")
                 on_call = not on_call
-            #else:
-            #    sendCommand(ser, command="SET_STATUS", status="OFF_CALL")
-            #    on_call = not on_call
-            #time.sleep(1)
 
-#sendCommand("SET_COLOR", status="ON_CALL", value="RED", value_type="NAME")
 __main__()
