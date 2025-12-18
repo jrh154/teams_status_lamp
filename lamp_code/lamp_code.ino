@@ -19,7 +19,7 @@ CRGB leds[NUM_LEDS];
 #define MCU_MESSAGE "S"
 
 // Serial Setup
-#define BAUD 115200
+#define BAUD 9600
 
 // Heartbeat Timeout
 #define HEARTBEAT_TIMEOUT 10000
@@ -150,6 +150,7 @@ void broadcastID() {
   while(true) {
 
     Serial.println(ID); // broadcast on Serial for script to listen to
+    Serial.flush();
     
     //if Serial is empty, do nothing, if it doe shave something, check for connection request from PC
     if (Serial.available() != 0) {
@@ -175,7 +176,7 @@ void broadcastID() {
         return; // Exit the function
       }
     }
-    delay(100);
+    delay(500);
   }
 }
 
@@ -275,10 +276,10 @@ void setStatus(String command) {
   String status = command.substring(first_colon+1);
 
   // Perform action based on status...can extend this as needed
-  if(status == "ON_CALL") {
+  if(status.equals("ON_CALL")) {
     //Serial.println("Changing LED status to: ON CALL");
     turnOnLeds(on_call_color);
-  } else if(status == "OFF_CALL") {
+  } else if(status.equals("OFF_CALL")) {
     //Serial.println("Changing LED status to OFF_CALL");
     turnOnLeds(off_call_color);
   } else {
@@ -290,8 +291,9 @@ void setStatus(String command) {
 void parseCommand(String command) {
 
   // debugging
-  //Serial.print("Command Received: ");
-  //Serial.println(command);
+  // Serial.print("Command Received: ");
+  // Serial.println(command);
+  // Serial.flush();
 
   // Send to appropriate function based on command...can expand this here
   if (command.startsWith("SET_COLOR")) {
@@ -349,7 +351,7 @@ void loop() {
   if (currentHeartBeatTimer - previousHeartBeatTimer >=HEARTBEAT_PULSE) {
     Serial.println(MCU_MESSAGE); // send heartbeat to PC
     Serial.flush();
-  
+    previousHeartBeatTimer = millis();
     if (currentTimeoutMillis - previousTimeoutMillis > HEARTBEAT_TIMEOUT) {
        //Serial.println("ERROR! LOST CONNECTION WITH PC...RESTARTING BROADCAST");
        blinkLeds(CRGB::Violet, 200, 5);

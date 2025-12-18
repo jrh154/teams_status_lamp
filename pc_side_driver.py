@@ -1,12 +1,30 @@
 import time
 import serial
 import serial.tools.list_ports
+import threading
 
-BAUD_RATE = 115200
+BAUD_RATE = 9600
 PC_MESSAGE = "R"
 HEARTBEAT_TIMEOUT = 10 # in seconds
 MAX_LISTEN_TIME = 6
 
+stop_event = threading.Event()
+
+def sendHeartbeat(ser):
+    global stop_event
+    heart_beat_pulse = 2.0
+    while not stop_event.is_set():
+        try:
+            ser.write(b"R\n")
+            ser.flush()
+            stop_event.wait(heart_beat_pulse)
+        except serial.SerialException as e:
+            print(f"An error occurred with the serial connection: {e}")
+            stop_event.set()
+        except Exception as e:
+            print(f"The following error occurred: {e}")
+            stop_event.set()
+        
 def sendCommand(ser, command, **kwargs):
     valid_args = ["status", "value_type", "value"]
     valid_commands = ["SET_COLOR", "SET_STATUS"]
@@ -66,17 +84,22 @@ def connectToSerial():
                 if ser_data == b"TEAMS_LAMP":
                     print("Teams lamp found")
                     ser.write(b"R\n")
-                    time.sleep(5) # need to add a rest period in here otherwise loop does not break
+                    time.sleep(3) # need to add a rest period in here otherwise loop does not break
                     ser.flushInput()
+                    heartbeat_thread = threading.Thread(target=sendHeartbeat, args=(ser,))
+                    heartbeat_thread.start()
+                    time.sleep(2)
                     return ser
                 time.sleep(0.5)
                 i +=1 
+                
 def read_mcu_updates(ser):
     if ser.in_waiting > 0:
         mcu_message = ser.readline().strip()
         print(f"The MCU Message was: {mcu_message}")
 
         if mcu_message == b"TEAMS_LAMP":
+            ser.close()
             return False
     return True        
 
@@ -87,6 +110,7 @@ def __main__():
     while True:
         while not ser:
             ser = connectToSerial()
+            time.sleep(10) # wait 10 s between attempts to connect
         while ser:
             # Read in a non-blocking way to see if lamp has reset
             if not read_mcu_updates(ser):
