@@ -29,3 +29,9 @@ or even more!
 [2025-12-20 00:01:52] Connected to COM8 (VID:6790 PID:29987 SN:)
 [2025-12-20 00:01:52] Status Change: No Active Teams Call Detected
 [2025-12-20 00:02:10] Disconnect Status Change: Stopped
+[2025-12-20 00:06:49] Starting Teams Status Lamp...
+[2025-12-20 00:06:55] Controller started.
+[2025-12-20 00:06:57] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 00:06:57] Status Change: No Active Teams Call Detected
+[2025-12-20 00:07:06] Disconnect Status Change: Stopped
+[2025-12-20 00:07:06] Controller thread joined.
