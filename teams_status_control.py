@@ -8,13 +8,36 @@ BAUD_RATE = 9600
 SCAN_TIMEOUT = 3 # Seconds to wait for ID on each port
 LOOP_DELAY = 2   # Seconds between status updates
 
+# Add ctypes for Windows API calls
+import ctypes
+
+def get_active_window_title():
+    """
+    Returns the title of the currently active window using Windows API.
+    """
+    hwnd = ctypes.windll.user32.GetForegroundWindow()
+    length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+    buff = ctypes.create_unicode_buffer(length + 1)
+    ctypes.windll.user32.GetWindowTextW(hwnd, buff, length + 1)
+    return buff.value
+
 def teams_mic():
     """
-    Placeholder function to check Teams microphone status.
+    Checks if Google Chrome is the active window.
     Returns:
-        bool: True if microphone is ON (On Call), False otherwise.
+        bool: True if Chrome is active, False otherwise.
     """
-    # TODO: Implement actual Teams API or log checking logic here
+    try:
+        title = get_active_window_title()
+        # print(f"Active Window: {title}") # Debugging
+        
+        # Check for Google Chrome in title
+        if "Google Chrome" in title or "Chrome" in title:
+            return True
+            
+    except Exception as e:
+        print(f"Error reading window title: {e}")
+        
     return False
 
 def find_device():
