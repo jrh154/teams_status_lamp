@@ -172,23 +172,19 @@ void processCommand(String cmd) {
   lastSerialTime = millis();
 
   if (cmd.startsWith(CONFIG_COLOR_CMD)) {
+    // Implicitly connect
+    if (currentState == DISCONNECTED) currentState = OFF_CALL;
     handleColorConfig(cmd);
     return;
   }
 
-  if (currentState == DISCONNECTED) {
-    if (cmd == CONNECT_CMD) {
-      currentState = OFF_CALL; // Default to off-call on connect
-    }
-  } else {
-    // We are connected (OFF_CALL or ON_CALL)
-    if (cmd == STATUS_ON_CMD) {
-      currentState = ON_CALL;
-    } else if (cmd == STATUS_OFF_CMD) {
-      currentState = OFF_CALL;
-    } else if (cmd == CONNECT_CMD) {
-       currentState = OFF_CALL;
-    }
+  // Handle Status Commands (Implicit Connection)
+  if (cmd == STATUS_ON_CMD) {
+    currentState = ON_CALL;
+  } else if (cmd == STATUS_OFF_CMD) {
+    currentState = OFF_CALL;
+  } else if (cmd == CONNECT_CMD) {
+    currentState = OFF_CALL;
   }
 }
 
