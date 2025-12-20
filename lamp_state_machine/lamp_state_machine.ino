@@ -185,6 +185,7 @@ void processCommand(String cmd) {
     currentState = OFF_CALL;
   } else if (cmd == CONNECT_CMD) {
     currentState = OFF_CALL;
+    Serial.println(DEVICE_ID);
   }
 }
 
