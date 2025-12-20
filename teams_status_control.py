@@ -10,15 +10,45 @@ import json
 import os
 import ctypes
 import sys
+import datetime
 
 # Configuration
 KNOWN_DEVICES_FILE = "known_devices.json"
+LOG_FILE = "teams_status.log"
 DEVICE_ID = "TEAMS_LAMP"
 BAUD_RATE = 9600
 SCAN_TIMEOUT = 3 
-LOOP_DELAY = 2   
+LOOP_DELAY = 2
+MAX_LOG_LINES = 1000
 
 # --- Helper Functions ---
+
+def trim_log():
+    try:
+        if os.path.exists(LOG_FILE):
+             with open(LOG_FILE, 'r') as f:
+                 lines = f.readlines()
+             if len(lines) > MAX_LOG_LINES:
+                 with open(LOG_FILE, 'w') as f:
+                     f.writelines(lines[-MAX_LOG_LINES:])
+    except Exception as e:
+        print(f"Log trim error: {e}")
+
+def log_message(message):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    entry = f"[{timestamp}] {message}"
+    print(entry) # Keep console output
+    try:
+        with open(LOG_FILE, 'a') as f:
+            f.write(entry + "\n")
+        trim_log()
+    except Exception as e:
+        print(f"Logging error: {e}")
+
+def hex_to_rgb(hex_code):
+    hex_code = hex_code.lstrip('#')
+    return tuple(int(hex_code[i:i+2], 16) for i in (0, 2, 4))
+
 
 def get_active_window_title():
     hwnd = ctypes.windll.user32.GetForegroundWindow()
@@ -65,13 +95,14 @@ class LampController:
     def start(self):
         if not self.running:
             self.running = True
+            log_message("Controller started.")
             self.thread = threading.Thread(target=self._run_loop, daemon=True)
             self.thread.start()
-            print("Controller thread started.")
 
     def stop(self):
-        self.running = False
-        print("Stopping controller...")
+        if self.running:
+            self.running = False
+            log_message("Disconnect Status Change: Stopped")
         # The thread will exit gracefully when it checks self.running
 
     def forget_all_devices(self):
@@ -100,6 +131,7 @@ class LampController:
                     line = s.readline().decode('utf-8', errors='ignore').strip()
                     if DEVICE_ID in line:
                         print(f"Found {DEVICE_ID} on {port.device}!")
+                        log_message(f"Connected to {port.device} (VID:{port.vid} PID:{port.pid} SN:{port.serial_number})")
                         save_known_device(port)
                         return s
             s.close()
@@ -137,9 +169,24 @@ class LampController:
             ser = self._find_device()
             if ser:
                 self.serial_conn = ser
+                last_mic_status = None
+                last_heartbeat = time.time()
+                
                 try:
                     while self.running:
                         is_on = teams_mic()
+                        
+                        # Log Mic Status Change
+                        if is_on != last_mic_status:
+                            status_str = "Detected Active Teams Call" if is_on else "No Active Teams Call Detected"
+                            log_message(f"Status Change: {status_str}")
+                            last_mic_status = is_on
+                        
+                        # Log Heartbeat (every 2 mins / 120s)
+                        if time.time() - last_heartbeat > 120:
+                            log_message("Status Update: Connected and Running")
+                            last_heartbeat = time.time()
+                            
                         cmd = "S:ON" if is_on else "S:OFF"
                         ser.write(f"{cmd}\n".encode())
                         
@@ -149,7 +196,7 @@ class LampController:
                             if not self.running: break
                             time.sleep(0.1)
                 except Exception as e:
-                    print(f"Connection error: {e}")
+                    log_message(f"Disconnect Status Change: Connection lost ({e})")
                 finally:
                     if self.serial_conn:
                         self.serial_conn.close()
@@ -170,28 +217,45 @@ class LampGUI:
         # Tkinter Setup
         self.root = tk.Tk()
         self.root.title("Teams Lamp Control")
-        self.root.geometry("300x180")
+        # Adjust geometry for grid layout
+        self.root.geometry("350x200") 
         self.root.protocol('WM_DELETE_WINDOW', self.minimize_to_tray)
 
+        # Configure Grid Weights so it looks decent
+        self.root.columnconfigure(0, weight=1)
+        self.root.columnconfigure(1, weight=1)
+
         # UI Elements
+        
+        # Status Label (Top)
         self.status_label = tk.Label(self.root, text="Ready", fg="gray")
-        self.status_label.pack(pady=10)
+        self.status_label.grid(row=0, column=0, columnspan=2, pady=10)
 
+        # Row 1: Connect | Disconnect
         self.btn_connect = tk.Button(self.root, text="Connect", command=self.on_connect, width=20, bg="#dddddd")
-        self.btn_connect.pack(pady=5)
+        self.btn_connect.grid(row=1, column=0, padx=5, pady=5)
 
-        self.btn_disconnect = tk.Button(self.root, text="Disconnect", command=self.on_disconnect, width=20, bg="#dddddd")
-        self.btn_disconnect.pack(pady=5)
+        self.btn_disconnect = tk.Button(self.root, text="Disconnect", command=self.on_disconnect, width=20, bg="#dddddd", state="disabled")
+        self.btn_disconnect.grid(row=1, column=1, padx=5, pady=5)
+
+        # Row 2: View Log | Forget All Devices
+        self.btn_log = tk.Button(self.root, text="View Log", command=self.open_log_viewer, width=20, bg="#dddddd")
+        self.btn_log.grid(row=2, column=0, padx=5, pady=5)
 
         self.btn_forget = tk.Button(self.root, text="Forget All Devices", command=self.on_forget, width=20, bg="#ffcccc")
-        self.btn_forget.pack(pady=5)
+        self.btn_forget.grid(row=2, column=1, padx=5, pady=5)
+
+        # Row 3: Set On Color | Set Off Color
+        self.btn_on_color = tk.Button(self.root, text="Set On-Call Color", command=lambda: self.pick_color("ON"), width=20, bg="#ddddff")
+        self.btn_on_color.grid(row=3, column=0, padx=5, pady=5)
+
+        self.btn_off_color = tk.Button(self.root, text="Set Off-Call Color", command=lambda: self.pick_color("OFF"), width=20, bg="#ddddff")
+        self.btn_off_color.grid(row=3, column=1, padx=5, pady=5)
 
         # Tray Setup
         self.icon = None
         self.create_tray_icon()
         
-        # Auto-start connection on launch (Optional, keeping it manual as per request)
-
     def create_tray_icon(self):
         # Generate a simple icon image
         image = Image.new('RGB', (64, 64), color=(73, 109, 137))
@@ -235,9 +299,64 @@ class LampGUI:
         self.controller.forget_all_devices()
         messagebox.showinfo("Success", "Known devices cleared.")
 
+    def open_log_viewer(self):
+        log_window = tk.Toplevel(self.root)
+        log_window.title("Teams Status Log")
+        log_window.geometry("600x400")
+        
+        from tkinter import scrolledtext
+        text_area = scrolledtext.ScrolledText(log_window, wrap=tk.WORD, width=40, height=10)
+        text_area.pack(expand=True, fill='both', padx=10, pady=10)
+        text_area.config(state='disabled') # Read-only
+        
+        log_window.last_mtime = 0
+        
+        def refresh_log():
+            try:
+                # Check if window still exists
+                if not log_window.winfo_exists():
+                    return
+
+                log_file_path = LOG_FILE
+                if os.path.exists(log_file_path):
+                    mtime = os.path.getmtime(log_file_path)
+                    if mtime > log_window.last_mtime:
+                        log_window.last_mtime = mtime
+                        with open(log_file_path, 'r') as f:
+                            content = f.read()
+                            
+                        text_area.config(state='normal')
+                        text_area.delete('1.0', tk.END)
+                        text_area.insert(tk.INSERT, content)
+                        text_area.see(tk.END) # Auto-scroll to bottom
+                        text_area.config(state='disabled')
+            except Exception as e:
+                print(f"Log refresh error: {e}")
+            
+            # Schedule next refresh
+            log_window.after(1000, refresh_log)
+            
+        # Start polling
+        refresh_log()
+
+    def pick_color(self, target):
+        try:
+            from tkinter import colorchooser
+            color = colorchooser.askcolor(title=f"Choose {target} Color")
+            if color[1]: # color is ((r,g,b), hex)
+                hex_code = color[1]
+                rgb = hex_to_rgb(hex_code)
+                log_message(f"Color Change: Set {target} to {hex_code} (RGB: {rgb})")
+                
+                print(f"TODO: Set {target} to {hex_code}")
+                # We will add the backend call here in the next step
+        except Exception as e:
+            print(f"Color picker error: {e}")
+
     def run(self):
         self.root.mainloop()
 
 if __name__ == "__main__":
+    log_message("Starting Teams Status Lamp...")
     app = LampGUI()
     app.run()
