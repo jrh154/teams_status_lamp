@@ -103,7 +103,9 @@ class LampController:
         if self.running:
             self.running = False
             log_message("Disconnect Status Change: Stopped")
-        # The thread will exit gracefully when it checks self.running
+            if self.thread and self.thread.is_alive():
+                self.thread.join(timeout=2.0)
+                log_message("Controller thread joined.")
 
     def forget_all_devices(self):
         if os.path.exists(KNOWN_DEVICES_FILE):
@@ -282,6 +284,8 @@ class LampGUI:
             self.icon.stop()
         self.controller.stop()
         self.root.quit()
+        self.root.destroy()
+        sys.exit(0)
 
     def on_connect(self):
         self.controller.start()
