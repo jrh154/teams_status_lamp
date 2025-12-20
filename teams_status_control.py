@@ -11,6 +11,7 @@ import os
 import ctypes
 import sys
 import datetime
+import queue
 
 # Configuration
 KNOWN_DEVICES_FILE = "known_devices.json"
@@ -91,6 +92,7 @@ class LampController:
         self.running = False
         self.thread = None
         self.serial_conn = None
+        self.command_queue = queue.Queue()
 
     def start(self):
         if not self.running:
@@ -106,6 +108,10 @@ class LampController:
             if self.thread and self.thread.is_alive():
                 self.thread.join(timeout=2.0)
                 log_message("Controller thread joined.")
+
+    def set_color(self, target, hex_code):
+        """Queues a color change command."""
+        self.command_queue.put((target, hex_code))
 
     def forget_all_devices(self):
         if os.path.exists(KNOWN_DEVICES_FILE):
@@ -177,6 +183,35 @@ class LampController:
                 try:
                     while self.running:
                         is_on = teams_mic()
+                        
+                        # Check for pending color commands
+                        try:
+                            target, hex_val = self.command_queue.get_nowait()
+                            
+                            # clear buffers to ensure clean transmission
+                            ser.reset_input_buffer()
+                            ser.reset_output_buffer()
+                            time.sleep(0.1) # Brief pause to let line settle
+                            
+                            # Send Config Command
+                            # Arduino expects "FFFFFF", not "#FFFFFF"
+                            hex_clean = hex_val.lstrip('#')
+                            cmd_str = f"C:{target}:{hex_clean}"
+                            
+                            log_message(f"Configuration: Sending {cmd_str}")
+                            print(f"Sending Config: {cmd_str}")
+                            
+                            ser.write(f"{cmd_str}\n".encode())
+                            ser.flush() # Ensure it's effectively sent
+                            
+                            # Wait for Arduino Blink Confirmation (3s) + buffer
+                            # We sleep here to interrupt the status loop as requested
+                            time.sleep(4.0)
+                            
+                            self.command_queue.task_done()
+                            continue # Skip status update this cycle
+                        except queue.Empty:
+                            pass
                         
                         # Log Mic Status Change
                         if is_on != last_mic_status:
@@ -352,8 +387,8 @@ class LampGUI:
                 rgb = hex_to_rgb(hex_code)
                 log_message(f"Color Change: Set {target} to {hex_code} (RGB: {rgb})")
                 
-                print(f"TODO: Set {target} to {hex_code}")
-                # We will add the backend call here in the next step
+                # Send to controller
+                self.controller.set_color(target, hex_code)
         except Exception as e:
             print(f"Color picker error: {e}")
 
