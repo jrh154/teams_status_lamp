@@ -76,12 +76,7 @@ void updateLeds() {
 
   switch (currentState) {
     case DISCONNECTED:
-      // Blink Purple
-      if ((currentMillis / (BLINK_INTERVAL / 2)) % 2 == 0) {
-        fill_solid(leds, NUM_LEDS, COLOR_DISCONNECTED);
-      } else {
-        fill_solid(leds, NUM_LEDS, CRGB::Black);
-      }
+      fill_solid(leds, NUM_LEDS, COLOR_DISCONNECTED);
       break;
 
     case OFF_CALL:

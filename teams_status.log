@@ -71,3 +71,153 @@ or even more!
 [2025-12-20 00:26:13] Status Change: No Active Teams Call Detected
 [2025-12-20 00:26:19] Disconnect Status Change: Stopped
 [2025-12-20 00:26:19] Controller thread joined.
+[2025-12-20 13:10:22] Starting Teams Status Lamp...
+[2025-12-20 13:10:25] Controller started.
+[2025-12-20 13:10:27] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:10:27] Status Change: No Active Teams Call Detected
+[2025-12-20 13:10:52] Disconnect Status Change: Stopped
+[2025-12-20 13:10:52] Controller thread joined.
+[2025-12-20 13:10:56] Controller started.
+[2025-12-20 13:10:58] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:10:58] Status Change: No Active Teams Call Detected
+[2025-12-20 13:11:08] Status Change: Detected Active Teams Call
+[2025-12-20 13:11:24] Status Change: No Active Teams Call Detected
+[2025-12-20 13:11:28] Status Change: Detected Active Teams Call
+[2025-12-20 13:11:30] Status Change: No Active Teams Call Detected
+[2025-12-20 13:11:35] Color Change: Set ON to #ff0000 (RGB: (255, 0, 0))
+[2025-12-20 13:11:36] Configuration: Sending C:ON:ff0000
+[2025-12-20 13:11:42] Status Change: Detected Active Teams Call
+[2025-12-20 13:11:49] Status Change: No Active Teams Call Detected
+[2025-12-20 13:11:51] Status Change: Detected Active Teams Call
+[2025-12-20 13:11:53] Status Change: No Active Teams Call Detected
+[2025-12-20 13:11:55] Status Change: Detected Active Teams Call
+[2025-12-20 13:11:59] Status Change: No Active Teams Call Detected
+[2025-12-20 13:12:07] Status Change: Detected Active Teams Call
+[2025-12-20 13:12:09] Status Change: No Active Teams Call Detected
+[2025-12-20 13:12:38] Starting Teams Status Lamp...
+[2025-12-20 13:12:47] Starting Teams Status Lamp...
+[2025-12-20 13:13:54] Starting Teams Status Lamp...
+[2025-12-20 13:14:28] Starting Teams Status Lamp...
+[2025-12-20 13:16:43] Starting Teams Status Lamp...
+[2025-12-20 13:19:20] Starting Teams Status Lamp...
+[2025-12-20 13:19:20] Controller started (Retries: 5).
+[2025-12-20 13:19:22] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:19:22] Status Change: No Active Teams Call Detected
+[2025-12-20 13:19:31] Disconnect Status Change: Stopped
+[2025-12-20 13:19:31] Controller thread joined.
+[2025-12-20 13:19:32] Controller started (Retries: 5).
+[2025-12-20 13:19:34] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:19:34] Status Change: No Active Teams Call Detected
+[2025-12-20 13:20:04] Disconnect Status Change: Stopped
+[2025-12-20 13:20:04] Controller thread joined.
+[2025-12-20 13:20:41] Starting Teams Status Lamp...
+[2025-12-20 13:20:41] Controller started (Retries: 5).
+[2025-12-20 13:20:43] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:20:43] Status Change: No Active Teams Call Detected
+[2025-12-20 13:20:45] Disconnect Status Change: Stopped
+[2025-12-20 13:20:45] Controller thread joined.
+[2025-12-20 13:20:47] Controller started (Retries: 5).
+[2025-12-20 13:20:49] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:20:49] Status Change: No Active Teams Call Detected
+[2025-12-20 13:20:57] Status Change: Detected Active Teams Call
+[2025-12-20 13:20:59] Status Change: No Active Teams Call Detected
+[2025-12-20 13:21:01] Status Change: Detected Active Teams Call
+[2025-12-20 13:21:03] Status Change: No Active Teams Call Detected
+[2025-12-20 13:22:49] Status Update: Connected and Running
+[2025-12-20 13:23:18] Status Change: Detected Active Teams Call
+[2025-12-20 13:23:24] Status Change: No Active Teams Call Detected
+[2025-12-20 13:23:39] Color Change: Set OFF to #af18c5 (RGB: (175, 24, 197))
+[2025-12-20 13:23:40] Configuration: Sending C:OFF:af18c5
+[2025-12-20 13:23:58] Color Change: Set OFF to #ffff00 (RGB: (255, 255, 0))
+[2025-12-20 13:23:58] Configuration: Sending C:OFF:ffff00
+[2025-12-20 13:24:33] Color Change: Set OFF to #ff80ff (RGB: (255, 128, 255))
+[2025-12-20 13:24:34] Configuration: Sending C:OFF:ff80ff
+[2025-12-20 13:24:44] Status Change: Detected Active Teams Call
+[2025-12-20 13:24:50] Status Change: No Active Teams Call Detected
+[2025-12-20 13:24:50] Status Update: Connected and Running
+[2025-12-20 13:24:52] Status Change: Detected Active Teams Call
+[2025-12-20 13:25:00] Status Change: No Active Teams Call Detected
+[2025-12-20 13:25:21] Color Change: Set OFF to #804040 (RGB: (128, 64, 64))
+[2025-12-20 13:25:22] Configuration: Sending C:OFF:804040
+[2025-12-20 13:25:36] Color Change: Set OFF to #ff8000 (RGB: (255, 128, 0))
+[2025-12-20 13:25:36] Configuration: Sending C:OFF:ff8000
+[2025-12-20 13:25:52] Color Change: Set OFF to #730e8c (RGB: (115, 14, 140))
+[2025-12-20 13:25:53] Configuration: Sending C:OFF:730e8c
+[2025-12-20 13:26:51] Status Update: Connected and Running
+[2025-12-20 13:27:05] Disconnect Status Change: Stopped
+[2025-12-20 13:27:05] Controller thread joined.
+[2025-12-20 13:27:08] Controller started (Retries: 5).
+[2025-12-20 13:27:10] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-20 13:27:10] Status Change: No Active Teams Call Detected
+[2025-12-20 13:27:14] Disconnect Status Change: Connection lost (WriteFile failed (PermissionError(13, 'Access is denied.', None, 5)))
+[2025-12-20 13:28:04] Connection timed out. Stopping.
+[2025-12-20 13:28:04] Disconnect Status Change: Stopped
+[2025-12-21 16:53:05] Starting Teams Status Lamp...
+[2025-12-21 16:53:06] Controller started (Retries: 5).
+[2025-12-21 16:53:08] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-21 16:53:08] Status Change: No Active Teams Call Detected
+[2025-12-21 16:53:16] Status Change: Detected Active Teams Call
+[2025-12-21 16:53:20] Status Change: No Active Teams Call Detected
+[2025-12-21 16:53:28] Color Change: Set ON to #ff0000 (RGB: (255, 0, 0))
+[2025-12-21 16:53:30] Configuration: Sending C:ON:ff0000
+[2025-12-21 16:53:34] Color Change: Set OFF to #00ff00 (RGB: (0, 255, 0))
+[2025-12-21 16:53:36] Configuration: Sending C:OFF:00ff00
+[2025-12-21 16:53:42] Status Change: Detected Active Teams Call
+[2025-12-21 16:53:44] Status Change: No Active Teams Call Detected
+[2025-12-21 16:53:46] Status Change: Detected Active Teams Call
+[2025-12-21 16:55:08] Status Update: Connected and Running
+[2025-12-21 16:55:16] Disconnect Status Change: Connection lost (WriteFile failed (PermissionError(13, 'Access is denied.', None, 5)))
+[2025-12-21 16:56:06] Connection timed out. Stopping.
+[2025-12-21 16:56:06] Disconnect Status Change: Stopped
+[2025-12-21 21:40:17] Controller started (Retries: 5).
+[2025-12-21 21:40:19] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-21 21:40:19] Status Change: No Active Teams Call Detected
+[2025-12-21 21:41:35] Status Change: Detected Active Teams Call
+[2025-12-21 21:41:39] Status Change: No Active Teams Call Detected
+[2025-12-21 21:41:41] Status Change: Detected Active Teams Call
+[2025-12-21 21:42:07] Status Change: No Active Teams Call Detected
+[2025-12-21 21:42:19] Status Update: Connected and Running
+[2025-12-21 21:42:27] Status Change: Detected Active Teams Call
+[2025-12-21 21:43:11] Status Change: No Active Teams Call Detected
+[2025-12-21 21:43:13] Status Change: Detected Active Teams Call
+[2025-12-21 21:43:15] Status Change: No Active Teams Call Detected
+[2025-12-21 21:44:20] Status Update: Connected and Running
+[2025-12-21 21:44:38] Disconnect Status Change: Stopped
+[2025-12-21 21:44:38] Controller thread joined.
+[2025-12-21 21:45:19] Starting Teams Status Lamp...
+[2025-12-21 21:45:19] Controller started (Retries: 5).
+[2025-12-21 21:45:21] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-21 21:45:21] Status Change: No Active Teams Call Detected
+[2025-12-21 21:45:27] Status Change: Detected Active Teams Call
+[2025-12-21 21:45:31] Status Change: No Active Teams Call Detected
+[2025-12-21 21:45:35] Color Change: Set ON to #0000ff (RGB: (0, 0, 255))
+[2025-12-21 21:45:35] Configuration: Sending C:ON:0000ff
+[2025-12-21 21:45:39] Status Change: Detected Active Teams Call
+[2025-12-21 21:45:41] Status Change: No Active Teams Call Detected
+[2025-12-21 21:45:42] Disconnect Status Change: Stopped
+[2025-12-21 21:45:42] Controller thread joined.
+[2025-12-21 21:45:53] Controller started (Retries: 5).
+[2025-12-21 21:45:55] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-21 21:45:55] Status Change: No Active Teams Call Detected
+[2025-12-21 21:45:57] Disconnect Status Change: Stopped
+[2025-12-21 21:45:57] Controller thread joined.
+[2025-12-21 21:45:59] Controller started (Retries: 5).
+[2025-12-21 21:46:01] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-21 21:46:01] Status Change: No Active Teams Call Detected
+[2025-12-21 21:46:31] Disconnect Status Change: Stopped
+[2025-12-21 21:46:31] Controller thread joined.
+[2025-12-21 21:46:45] Controller started (Retries: 5).
+[2025-12-21 21:46:47] Connected to COM8 (VID:6790 PID:29987 SN:)
+[2025-12-21 21:46:47] Status Change: No Active Teams Call Detected
+[2025-12-21 21:46:57] Status Change: Detected Active Teams Call
+[2025-12-21 21:46:59] Status Change: No Active Teams Call Detected
+[2025-12-21 21:47:07] Status Change: Detected Active Teams Call
+[2025-12-21 21:47:09] Status Change: No Active Teams Call Detected
+[2025-12-21 21:47:12] Color Change: Set ON to #ff0000 (RGB: (255, 0, 0))
+[2025-12-21 21:47:13] Configuration: Sending C:ON:ff0000
+[2025-12-21 21:47:17] Status Change: Detected Active Teams Call
+[2025-12-21 21:47:19] Status Change: No Active Teams Call Detected
+[2025-12-21 21:48:16] Status Change: Detected Active Teams Call
+[2025-12-21 21:48:18] Status Change: No Active Teams Call Detected
+[2025-12-21 21:48:18] Disconnect Status Change: Stopped
+[2025-12-21 21:48:18] Controller thread joined.

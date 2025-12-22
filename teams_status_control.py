@@ -93,11 +93,15 @@ class LampController:
         self.thread = None
         self.serial_conn = None
         self.command_queue = queue.Queue()
+        self.max_retries = None
+        self.on_stop_callback = None
+        self.on_connect_callback = None
 
-    def start(self):
+    def start(self, max_retries=None):
         if not self.running:
             self.running = True
-            log_message("Controller started.")
+            self.max_retries = max_retries
+            log_message(f"Controller started (Retries: {max_retries if max_retries else 'Infinite'}).")
             self.thread = threading.Thread(target=self._run_loop, daemon=True)
             self.thread.start()
 
@@ -105,9 +109,14 @@ class LampController:
         if self.running:
             self.running = False
             log_message("Disconnect Status Change: Stopped")
-            if self.thread and self.thread.is_alive():
+            
+            # Prevent deadlock: Only join if we are NOT the thread being joined
+            if self.thread and self.thread.is_alive() and threading.current_thread() != self.thread:
                 self.thread.join(timeout=2.0)
                 log_message("Controller thread joined.")
+            
+            if self.on_stop_callback:
+                self.on_stop_callback()
 
     def set_color(self, target, hex_code):
         """Queues a color change command."""
@@ -173,10 +182,15 @@ class LampController:
         return None
 
     def _run_loop(self):
+        retries = 0
         while self.running:
             ser = self._find_device()
             if ser:
+                retries = 0 # Reset retries on success
                 self.serial_conn = ser
+                if self.on_connect_callback:
+                    self.on_connect_callback()
+
                 last_mic_status = None
                 last_heartbeat = time.time()
                 
@@ -241,6 +255,14 @@ class LampController:
             
             # Wait before rescan
             if self.running:
+                if ser is None: # Failed to find device
+                    if self.max_retries is not None:
+                        retries += 1
+                        if retries >= self.max_retries:
+                            log_message("Connection timed out. Stopping.")
+                            self.stop()
+                            return
+
                 for _ in range(50): # 5 seconds
                     if not self.running: break
                     time.sleep(0.1)
@@ -250,6 +272,9 @@ class LampController:
 class LampGUI:
     def __init__(self):
         self.controller = LampController()
+        # Set callback to handle stopping from thread
+        self.controller.on_stop_callback = self.handle_stop_callback
+        self.controller.on_connect_callback = self.handle_connect_callback
         
         # Tkinter Setup
         self.root = tk.Tk()
@@ -291,8 +316,11 @@ class LampGUI:
 
         # Tray Setup
         self.icon = None
-        self.create_tray_icon()
+        # self.create_tray_icon() # Don't create upfront
         
+        # Auto-start connection on launch
+        self.root.after(100, lambda: self.on_connect(max_retries=5))
+
     def create_tray_icon(self):
         # Generate a simple icon image
         image = Image.new('RGB', (64, 64), color=(73, 109, 137))
@@ -308,10 +336,12 @@ class LampGUI:
 
     def minimize_to_tray(self):
         self.root.withdraw()
+        self.create_tray_icon() # Create fresh instance
         threading.Thread(target=self.icon.run, daemon=True).start()
 
     def restore_from_tray(self, icon, item):
         self.icon.stop()
+        self.icon = None
         self.root.after(0, self.root.deiconify)
 
     def quit_app(self, icon=None, item=None):
@@ -322,14 +352,27 @@ class LampGUI:
         self.root.destroy()
         sys.exit(0)
 
-    def on_connect(self):
-        self.controller.start()
-        self.status_label.config(text="Running...", fg="green")
+    def on_connect(self, max_retries=5):
+        self.controller.start(max_retries=max_retries)
+        self.status_label.config(text="Scanning...", fg="orange")
         self.btn_connect.config(state="disabled")
         self.btn_disconnect.config(state="normal")
 
     def on_disconnect(self):
         self.controller.stop()
+        # self.reset_ui() # Callback will handle this
+
+    def handle_stop_callback(self):
+        # Schedule UI update on main thread
+        self.root.after(0, self.reset_ui)
+
+    def handle_connect_callback(self):
+        self.root.after(0, self.ui_connected)
+
+    def ui_connected(self):
+        self.status_label.config(text="Connected", fg="green")
+
+    def reset_ui(self):
         self.status_label.config(text="Stopped", fg="red")
         self.btn_connect.config(state="normal")
         self.btn_disconnect.config(state="disabled")
