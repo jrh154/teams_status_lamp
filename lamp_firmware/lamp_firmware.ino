@@ -2,7 +2,7 @@
 #include <EEPROM.h>
 
 // --- Configuration ---
-#define NUM_LEDS 2
+#define NUM_LEDS 3
 #define DATA_PIN A2
 #define BAUD_RATE 9600
 
