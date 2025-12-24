@@ -180,12 +180,16 @@ class LampController:
 
     def _try_connect(self, port):
         try:
-            print(f"Checking {port.device}...")
+            msg = f"Checking {port.device}..."
+            print(msg)
+            log_message(msg)
+            
             s = serial.Serial(port.device, BAUD_RATE, timeout=SCAN_TIMEOUT)
             s.dtr = True
             time.sleep(2)
             s.reset_input_buffer()
             s.write("R\n".encode()) # Handshake
+            log_message(f"Handshake sent to {port.device}, listening for response...")
 
             start_time = time.time()
             while time.time() - start_time < SCAN_TIMEOUT:
@@ -306,10 +310,15 @@ class LampController:
                 if ser is None: # Failed to find device
                     if self.max_retries is not None:
                         retries += 1
+                        remaining = self.max_retries - retries
+                        log_message(f"Sweeping Devices... {remaining} Retries Left")
+
                         if retries >= self.max_retries:
                             log_message("Connection timed out. Stopping.")
                             self.stop()
                             return
+                    else:
+                        log_message("Sweeping Devices... Retrying (Infinite)")
 
                 for _ in range(50): # 5 seconds
                     if not self.running: break
