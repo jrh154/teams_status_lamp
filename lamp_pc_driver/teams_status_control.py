@@ -16,10 +16,31 @@ import comtypes
 import psutil
 from pycaw.pycaw import AudioUtilities
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def get_app_path():
+    """Get the directory where the application is running/installed."""
+    if getattr(sys, 'frozen', False):
+        # If the application is run as a bundle, the PyInstaller bootloader
+        # extends the sys module by a flag frozen=True and sets the app 
+        # path into variable _MEIPASS'.
+        application_path = os.path.dirname(sys.executable)
+    else:
+        application_path = os.path.dirname(os.path.abspath(__file__))
+    return application_path
+
 # Configuration
 # Configuration
-KNOWN_DEVICES_FILE = os.path.join("log_files", "known_devices.json")
-LOG_FILE = os.path.join("log_files", "teams_status.log")
+KNOWN_DEVICES_FILE = os.path.join(get_app_path(), "log_files", "known_devices.json")
+LOG_FILE = os.path.join(get_app_path(), "log_files", "teams_status.log")
 DEVICE_ID = "TEAMS_LAMP"
 BAUD_RATE = 9600
 SCAN_TIMEOUT = 3 
@@ -345,12 +366,21 @@ class LampGUI:
         self.icon = None
         # self.create_tray_icon() # Don't create upfront
         
+        # Set Window Icon
+        try:
+             icon_path = resource_path(os.path.join("install_files", "tray_icon.png"))
+             if os.path.exists(icon_path):
+                 icon_img = tk.PhotoImage(file=icon_path)
+                 self.root.iconphoto(False, icon_img)
+        except Exception as e:
+             print(f"Failed to set window icon: {e}")
+
         # Auto-start connection on launch
         self.root.after(100, lambda: self.on_connect(max_retries=5))
 
     def create_tray_icon(self):
         # Load icon from file
-        icon_path = os.path.join("install_files", "tray_icon.png")
+        icon_path = resource_path(os.path.join("install_files", "tray_icon.png"))
         if os.path.exists(icon_path):
              image = Image.open(icon_path)
         else:
